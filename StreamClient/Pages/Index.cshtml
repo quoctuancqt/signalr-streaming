@@ -1,0 +1,92 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<div class="container-fluid">
+    <video id="preview" width="1280" height="720" autoplay muted></video>
+    <input type="button" id="start" value="Start" onclick="startRecording();" />
+    <input type="button" id="stop" value="Stop" onclick="stopRecording();" />
+</div>
+
+<script src="~/lib/signalr/signalr.js"></script>
+<script src="~/lib/signalr/msgpack5.js"></script>
+<script src="~/lib/signalr/signalr-protocol-msgpack.js"></script>
+<script>
+    let preview = document.getElementById("preview");
+    let allChunks = [];
+    let recorder;
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("http://localhost:5000/stream-hub")
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    connection.start().then(function () {
+        console.log("connected");
+        start();
+    });
+
+    function stopRecording() {
+        recorder.stop();
+        //const fullBlob = new Blob(allChunks);
+        //const link = document.createElement('a');
+        //link.style.display = 'none';
+
+        //const downloadUrl = window.URL.createObjectURL(fullBlob);
+        //link.href = downloadUrl;
+        //link.download = 'media.webm';
+
+        //document.body.appendChild(link);
+        //link.click();
+        //link.remove();
+    }
+
+    function start() {
+        navigator.mediaDevices
+
+            .getUserMedia({ video: true, audio: true })
+
+            .then(mediaStream => {
+                preview.srcObject = mediaStream;
+
+                preview.captureStream = preview.captureStream || preview.mozCaptureStream;
+
+                return new Promise(resolve => preview.onplaying = resolve);
+            });
+    }
+
+    function startRecording() {
+        // use MediaStream Recording API
+        recorder = new MediaRecorder(preview.captureStream(), {
+            mimeType: "video/webm;codecs=vp9",
+            audioBitsPerSecond: 1000000, // 1 Mbps
+            bitsPerSecond: 1000000      // 2 Mbps
+        });
+
+        // fires every one second and passes an BlobEvent
+        recorder.ondataavailable = event => {
+            console.log("origin", event.data);
+            allChunks.push(event.data);
+            // get the Blob from the event
+            const blob = event.data;
+            console.log("origin", event.data);
+            var reader = new FileReader();
+            reader.addEventListener("loadend", () => {
+                console.log("got chunk", reader.result);
+                connection.invoke("SendStream", { data: btoa(reader.result), type: event.data.type }).catch(err => console.error(err.toString()));
+            });
+            reader.readAsArrayBuffer(blob);
+            //connection.invoke("SendStream", event.data).catch(err => console.error(err.toString()));
+        };
+
+        // make data available event fire every one second
+        recorder.start(50);
+    }
+</script>

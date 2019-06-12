@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.438
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalStreaming", "SignalStreaming\SignalStreaming.csproj", "{47378568-A563-4ECA-A777-9ABC7C17DC62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamClient", "StreamClient\StreamClient.csproj", "{5B19C781-9AA8-4CAA-A70F-C0505A0C5DA0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{47378568-A563-4ECA-A777-9ABC7C17DC62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47378568-A563-4ECA-A777-9ABC7C17DC62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47378568-A563-4ECA-A777-9ABC7C17DC62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47378568-A563-4ECA-A777-9ABC7C17DC62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B19C781-9AA8-4CAA-A70F-C0505A0C5DA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B19C781-9AA8-4CAA-A70F-C0505A0C5DA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B19C781-9AA8-4CAA-A70F-C0505A0C5DA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B19C781-9AA8-4CAA-A70F-C0505A0C5DA0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F49CBE1A-19D2-4E17-999A-096DB9D10750}
+	EndGlobalSection
+EndGlobal

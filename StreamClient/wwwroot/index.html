@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html>
+<body>
+    <!--https://www.html5rocks.com/en/tutorials/getusermedia/intro/-->
+    <video autoplay></video>
+    <script src="/lib/signalr/signalr.js"></script>
+    <script src="/lib/signalr/msgpack5.min.js"></script>
+    <script src="/lib/signalr/signalr-protocol-msgpack.js"></script>
+
+    <script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
+    <script>
+        const video = document.querySelector('video');
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("http://localhost:5000/Web-rtc", {})
+            //.withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
+            .build();
+
+
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+        }).then(async function (stream) {
+            let recorder = RecordRTC(stream, {
+                type: 'video',
+                canvas: {
+                    width: 640,
+                    height: 480
+                },
+                bitrate: 2500
+            });
+
+            recorder.startRecording(function () {
+                //let blob = recorder.getBlob();
+                //console.log(blob);
+            });
+
+            const sleep = m => new Promise(r => setTimeout(r, m));
+            await sleep(3000);
+
+            recorder.stopRecording(function () {
+                let blob = recorder.getBlob();
+                var queue = [];
+                var isSend = true;
+                invokeSaveAsDialog(blob);
+                parseFile(blob, (buffer, offset, fileSize) => {
+                    queue.push({ Buffer: buffer, Offset: offset, Size: fileSize });
+                    if (isSend) {
+
+                        isSend = false;
+
+                        connection.start().then(() => {
+
+                            connection.invoke("StartConection", {});
+
+                            connection.on('MessagerReceived', (streamVideo) => {
+                                
+                                if (queue.length === 0) return;
+
+                                var obj = queue.shift();
+                                
+                                StreamToServer(obj);
+                            });
+                        });
+                    } 
+
+                });
+            });
+
+            video.srcObject = stream
+         });
+
+        function StreamToServer(obj) {
+            connection.invoke("SendStream", obj);
+        }
+
+        function parseFile(file, callback) {
+           
+            var fileSize = file.size;
+            var chunkSize = 64 * 1024; // bytes
+            var offset = 0;
+            var self = this; // we need a reference to the current object
+            var chunkReaderBlock = null;
+
+            var readEventHandler = function (evt) {
+                
+                if (evt.target.error == null) {
+                    offset += evt.target.result.length;
+                    //console.log(evt.target.result);
+                    callback(evt.target.result, offset, fileSize); // callback for handling read chunk
+                    
+                } else {
+                    console.log("Read error: " + evt.target.error);
+                    return;
+                }
+                if (offset >= fileSize) {
+                    console.log("Done reading file");
+                    return;
+                }
+
+                // of to the next chunk
+                chunkReaderBlock(offset, chunkSize, file);
+            }
+
+            chunkReaderBlock = function (_offset, length, _file) {
+                
+                var r = new FileReader();
+                var blob = _file.slice(_offset, length + _offset);
+                r.onload = readEventHandler;
+                r.readAsDataURL(blob);
+            }
+
+            // now let's start the read with the first block
+            chunkReaderBlock(offset, chunkSize, file);
+        }
+    </script>
+
+    <script>
+
+
+
+    </script>
+</body>
+</html>
